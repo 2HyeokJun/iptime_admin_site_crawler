@@ -10,13 +10,13 @@ import axios from 'redaxios';
   const page = await browser.newPage();
 
   // 로그인 페이지로 이동
-  await page.goto('http://asymptote.iptime.org:2358');
+  await page.goto('YOUR_ADMIN_SITE');
   await page.waitForNavigation({waitUntil: 'networkidle0'});
   page.on('console', message => console.log(message.text()));
 
   // 사용자 이름과 비밀번호 입력
-  await page.type('input[name=username]', 'leehyeokjun');
-  await page.type('input[name=passwd]', '2hayang!');
+  await page.type('input[name=username]', 'YOUR_ADMIN_ID');
+  await page.type('input[name=passwd]', 'YOUR_ADMIN_PASSWORD');
 
   // 로그인 버튼 클릭
   await page.click('#submit_bt'); // 로그인 버튼의 선택자에 맞게 조정해야 합니다.
@@ -26,7 +26,7 @@ import axios from 'redaxios';
   // eash mesh 페이지로 이동
   const cookies = await page.cookies();
   await page.setCookie(...cookies);
-  await page.goto('http://asymptote.iptime.org:2358/easymesh/?ver=14.25.4', {waitUntil: 'networkidle0'});
+  await page.goto('YOUR_ADMIN_SITE/easymesh/?ver=14.25.4', {waitUntil: 'networkidle0'});
 
   let onButton = 'input[type="image"][src="/images/Off.svg?3b1aa7d109af8d51ce5c489c64872b28"]'
   await page.click(onButton);
