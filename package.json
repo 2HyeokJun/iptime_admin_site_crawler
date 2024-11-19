@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --env-file=./.env --no-warnings --experimental-vm-modules node_modules/.bin/jest",
+    "start": "node --env-file=./.env app.js"
   },
   "author": "",
   "license": "ISC",
@@ -11,5 +12,8 @@
   "dependencies": {
     "puppeteer": "^23.6.0"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
 }

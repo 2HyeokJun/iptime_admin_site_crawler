@@ -1,0 +1,10 @@
+{
+  "father": {
+    "presence": true,
+    "time": "2024-11-19T13:26:01.190Z"
+  },
+  "sister": {
+    "presence": false,
+    "time": "2024-11-19T13:26:01.190Z"
+  }
+}
