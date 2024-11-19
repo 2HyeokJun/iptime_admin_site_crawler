@@ -7,7 +7,6 @@ export const startApp = async () => {
   const oldData = getDB();
   await analyzePresence(oldData, currentPresence);
   updateStatus(currentPresence);
-  process.exit(1);
 };
 
 await startApp();

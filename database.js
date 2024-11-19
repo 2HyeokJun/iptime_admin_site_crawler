@@ -15,6 +15,7 @@ export const getDB = () => {
 };
 
 export const updateStatus = (status) => {
+  console.log(status);
   const filePath = "./db.json";
 
   // 기존 db.json 파일 읽기
