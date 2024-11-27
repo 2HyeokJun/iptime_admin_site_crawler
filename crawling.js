@@ -38,6 +38,7 @@ export const getCurrentPresenceByCrawling = async () => {
       time: now,
     },
   };
+  console.log(presenceDTO);
   return presenceDTO;
 };
 
