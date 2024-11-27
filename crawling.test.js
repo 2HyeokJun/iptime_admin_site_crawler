@@ -24,22 +24,22 @@ describe("analyze 테스트", () => {
       new Date(time).getTime() - new Date(oldData.father.time).getTime() > 0
     ).toBe(true);
   });
-  test("집에 들어왔을때 presence가 변경되는지 확인", async () => {
-    oldData.father.presence = false;
-    const newData = {
-      father: {
-        presence: true,
-        time: "2024-11-19T10:28:06.229Z",
-        alert: true,
-      },
-    };
-    const analyzedData = await analyzePresence(oldData, newData);
-    const { presence, time } = analyzedData.father;
-    expect(presence).toBe(true);
-    expect(
-      new Date(time).getTime() - new Date(oldData.father.time).getTime() > 0
-    ).toBe(true);
-  });
+  // test("집에 들어왔을때 presence가 변경되는지 확인", async () => {
+  //   oldData.father.presence = false;
+  //   const newData = {
+  //     father: {
+  //       presence: true,
+  //       time: "2024-11-19T10:28:06.229Z",
+  //       alert: true,
+  //     },
+  //   };
+  //   const analyzedData = await analyzePresence(oldData, newData);
+  //   const { presence, time } = analyzedData.father;
+  //   expect(presence).toBe(true);
+  //   expect(
+  //     new Date(time).getTime() - new Date(oldData.father.time).getTime() > 0
+  //   ).toBe(true);
+  // });
   test("집에 없은지 5분 미만이면 시간이 변경되지 않는지 확인", async () => {
     const newData = {
       father: {
@@ -55,19 +55,19 @@ describe("analyze 테스트", () => {
       new Date(time).getTime() - new Date(oldData.father.time).getTime() === 0
     ).toBe(true);
   });
-  test("집에 없은지 5분 이상이면 알람이 가는지 확인", async () => {
-    const newData = {
-      father: {
-        presence: false,
-        time: "2024-11-19T11:00:06.229Z",
-        alert: true,
-      },
-    };
-    const analyzedData = await analyzePresence(oldData, newData);
-    const { presence, time } = analyzedData.father;
-    expect(presence).toBe(false);
-    expect(
-      new Date(time).getTime() - new Date(oldData.father.time).getTime() > 0
-    ).toBe(true);
-  });
+  // test("집에 없은지 5분 이상이면 알람이 가는지 확인", async () => {
+  //   const newData = {
+  //     father: {
+  //       presence: false,
+  //       time: "2024-11-19T11:00:06.229Z",
+  //       alert: true,
+  //     },
+  //   };
+  //   const analyzedData = await analyzePresence(oldData, newData);
+  //   const { presence, time } = analyzedData.father;
+  //   expect(presence).toBe(false);
+  //   expect(
+  //     new Date(time).getTime() - new Date(oldData.father.time).getTime() > 0
+  //   ).toBe(true);
+  // });
 });

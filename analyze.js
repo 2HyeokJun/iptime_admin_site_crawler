@@ -1,11 +1,15 @@
 import { sendAlert } from "./alert.js";
 
 export const analyzePresence = async (oldData, newData) => {
+  console.log("oldData:", oldData);
+  console.log("newData:", newData);
   const updatedData = JSON.parse(JSON.stringify(oldData));
   const analyzeList = Object.keys(newData);
   for (const list of analyzeList) {
     const beforePresence = oldData[list]?.presence;
     const afterPresence = newData[list]?.presence;
+    const beforeTime = new Date(updatedData[list].time);
+    const afterTime = new Date(newData[list].time);
     if (isSamePresence(beforePresence, afterPresence)) {
       updatedData[list].time = newData[list].time;
     } else if (isComeToHome(beforePresence, afterPresence)) {
@@ -13,11 +17,12 @@ export const analyzePresence = async (oldData, newData) => {
       updatedData[list].time = newData[list].time;
       await sendAlert(list, afterPresence);
     } else if (isLeftHome(beforePresence, afterPresence)) {
-      const beforeTime = new Date(oldData[list].time);
+      const beforeTime = new Date(updatedData[list].time);
       const afterTime = new Date(newData[list].time);
       const timeInterval = getTimeIntervalMinutes(beforeTime, afterTime);
       const MINIMUM_WAITING_MINUTES = 5;
       if (timeInterval > MINIMUM_WAITING_MINUTES) {
+        console.log(list, "isTimeIntervalOver");
         updatedData[list].presence = afterPresence;
         updatedData[list].time = newData[list].time;
         await sendAlert(list, afterPresence);

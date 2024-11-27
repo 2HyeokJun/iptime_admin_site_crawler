@@ -30,6 +30,7 @@ export const getCurrentPresenceByCrawling = async () => {
       presence:
         isFatherHome(pageContent) ||
         (isTVPowerOn(pageContent) && !isSisterHome(pageContent)),
+      // prsence: false,
       time: now,
     },
     sister: {
