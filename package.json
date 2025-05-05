@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "node --env-file=./.env --no-warnings --experimental-vm-modules node_modules/.bin/jest",
-    "start": "node --env-file=./.env app.js",
-    "reload": "pm2 reload 0"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --env-file=./.env ./crawling.js"
   },
   "author": "",
   "license": "ISC",

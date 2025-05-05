@@ -1,69 +1,65 @@
-import puppeteer from "puppeteer";
-import fs from "fs";
-import { getDB, updateStatus } from "./database.js";
+import puppeteer from 'puppeteer';
+import * as db from './db.js';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
+import timezone from 'dayjs/plugin/timezone.js';
+import { alert } from './alert.js'
 
-export const getCurrentPresenceByCrawling = async () => {
-  // 브라우저 실행
-  const browser = await puppeteer.launch({ headless: true }); // headless 모드를 끄려면 false로 설정
-  const page = await browser.newPage();
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
-  // Basic Auth 설정 (아이디:패스워드 형식으로 Authorization 헤더를 설정)
-  const username = process.env.ADMIN_ID;
-  const password = process.env.ADMIN_PW;
-  const auth = Buffer.from(`${username}:${password}`).toString("base64");
+(async () => {
+  const browser = await puppeteer.launch({ headless: "new" });
+  const page    = await browser.newPage();
 
-  await page.setExtraHTTPHeaders({
-    Authorization: `Basic ${auth}`,
+  await page.authenticate({
+    username: process.env.ADMIN_ID,
+    password: process.env.ADMIN_PASSWORD,
   });
 
-  // 접속할 웹사이트 URL
-  const url = process.env.IPTIME_URL;
+  await page.goto(process.env.ADMIN_SITE, { waitUntil: 'networkidle2' });
 
-  // 페이지 접속
-  await page.goto(url, { waitUntil: "networkidle2" });
-  await clickOnButton(page);
-  await clickOnButton(page);
-  const pageContent = await page.content();
-  const now = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
-  const presenceDTO = {
-    father: {
-      presence:
-        isFatherHome(pageContent) ||
-        (isTVPowerOn(pageContent) && !isSisterHome(pageContent)),
-      // prsence: false,
-      time: now,
-    },
-    sister: {
-      presence: isSisterHome(pageContent),
-      time: now,
-    },
-  };
-  console.log(presenceDTO);
-  return presenceDTO;
-};
-
-export const clickOnButton = async (page) => {
-  const selector = '.on-off-button input[type="image"]'; // on-off-button 내부의 버튼 선택
-
-  try {
-    // 선택자 대기
-    await page.waitForSelector(selector, { visible: true });
-
-    // 버튼 클릭
-    await page.click(selector);
-  } catch (error) {
-    console.error("Failed to click the button:", error);
+  const offButton = await page.$('div.on-off-button input[src*="Off.svg"]');
+  if (offButton) {
+    await offButton.click();
+    await page.waitForFunction(
+      () => document.querySelector('div.on-off-button input').src.includes('On.svg'),
+      { timeout: 5000 }
+    ).catch(() => {});
   }
-};
 
-export const isFatherHome = (text) => {
-  return text.includes("[아빠]");
-};
+  const productNames = await page.$$eval(
+    'li.station-item p.clickable',
+    els => els.map(el => el.textContent.trim())
+  );
 
-export const isTVPowerOn = (text) => {
-  return text.includes("LGwebOSTV");
-};
+  await browser.close();
+  const arrivedDevices = await db.getArrivingDevices(productNames)
+  for (const device of arrivedDevices) {
+    const isSisterHome = device.includes("누나")
+    const isFatherHome = device.includes("아빠")
+    if (isSisterHome) {
+      await alert("arrived", "누나")
+    }
+    if (isFatherHome) {
+      await alert("arrived", "아빠")
+    }
+  }
+  
+  await db.upsertHomeDevices(productNames);
+  const leavingDevices = await db.getLeavingDevices(productNames)
+  for (const device of leavingDevices) {
+      const isSisterHome = device.includes("누나")
+      const isFatherHome = device.includes("아빠")
+      if (isSisterHome) {
+        await alert("arrived", "누나")
+      }
+      if (isFatherHome) {
+        await alert("arrived", "아빠")
+      }
+  }
+  await db.markDevicesAway(leavingDevices)
 
-export const isSisterHome = (text) => {
-  return text.includes("[누나]");
-};
+  const now = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD HH:mm:ss');
+  console.log("크롤링 완료:", now)
+})();

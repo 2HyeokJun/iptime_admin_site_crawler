@@ -1,28 +1,32 @@
-export const sendAlert = async (person, presence) => {
-  const presenceMessage = presence ? "Home" : "Out";
-  try {
-    const fetchResult = await fetch(process.env.ALERT_URL, {
-      method: "PUT", // POST works too
-      body: `${person} ${presenceMessage}`,
-      headers: getHeaderByStatus(person, presence),
-    });
-    if (!fetchResult.ok) {
-      throw new Error(error);
+import axios from 'redaxios';
+
+export const alert = async (type, target) => {
+    let emoji = getTags(type, target);
+    let status = type === "arrived" ? "HOME" : "OUT"
+
+    await axios.post(
+        process.env.ALERT_SITE,
+        `${target} ${status}`,
+        {
+            headers: {
+            Tags: emoji,
+            'Content-Type': 'text/plain'
+            }
+        }
+    );
+
+}
+
+const getTags = (type, target) => {
+    if (target === "누나") {
+        return "heavy_check_mark"
     }
-  } catch (error) {
-    console.error("fetch error:", error);
-  }
-};
-
-export const getHeaderByStatus = (person, presence) => {
-  let tag = "";
-  if (person === "father" && presence) {
-    tag = "skull_and_crossbones";
-  } else if (person === "father" && !presence) {
-    tag = "wave";
-  } else {
-    tag = "heavy_check_mark";
-  }
-
-  return { Tags: tag };
-};
+    // target = "아빠"
+    if (type === "arrived" || target === "HJ's_S22U") {
+        return "skull"
+    }
+    if (type === "out") {
+        return "tada"
+    }
+    
+}
