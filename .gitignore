@@ -1,3 +1,4 @@
 node_modules
 .env
-house.db
+db.json
+ecosystem.config.cjs
