@@ -1,124 +1,65 @@
 import puppeteer from 'puppeteer';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
-import axios from 'redaxios';
+import * as db from './db.js';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
+import { alert } from './alert.js'
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-
 (async () => {
-  const browser = await puppeteer.launch({ headless: 'new' }); // headless: false는 브라우저가 GUI 모드로 실행됨을 의미합니다.
-  const page = await browser.newPage();
+  const browser = await puppeteer.launch({ headless: "new" });
+  const page    = await browser.newPage();
 
-  // 로그인 페이지로 이동
-  await page.goto(process.env.ADMIN_SITE);
-  await page.waitForNavigation({waitUntil: 'networkidle0'});
-  page.on('console', message => console.log(message.text()));
+  await page.authenticate({
+    username: process.env.ADMIN_ID,
+    password: process.env.ADMIN_PASSWORD,
+  });
 
-  // 사용자 이름과 비밀번호 입력
-  await page.type('input[name=username]', process.env.ADMIN_ID);
-  await page.type('input[name=passwd]', process.env.ADMIN_PASSWORD);
+  await page.goto(process.env.ADMIN_SITE, { waitUntil: 'networkidle2' });
 
-  // 로그인 버튼 클릭
-  await page.click('#submit_bt'); // 로그인 버튼의 선택자에 맞게 조정해야 합니다.
+  const offButton = await page.$('div.on-off-button input[src*="Off.svg"]');
+  if (offButton) {
+    await offButton.click();
+    await page.waitForFunction(
+      () => document.querySelector('div.on-off-button input').src.includes('On.svg'),
+      { timeout: 5000 }
+    ).catch(() => {});
+  }
 
-  // 페이지 네비게이션이 완료될 때까지 기다림
-  await page.waitForNavigation();
-  // easy mesh 페이지로 이동
-  const cookies = await page.cookies();
-  await page.setCookie(...cookies);
-  await page.goto(`${process.env.ADMIN_SITE}/easymesh/?ver=14.25.4`, {waitUntil: 'networkidle0'});
+  const productNames = await page.$$eval(
+    'li.station-item p.clickable',
+    els => els.map(el => el.textContent.trim())
+  );
 
-  let onButton = `input[type="image"][src="${process.env.OFF_IMAGE_SOURCE}"]`
-  await page.click(onButton);
-  await page.waitForSelector('.station-item');
-  const items = await page.$$eval('.station-item', elements => elements.map(el => el.textContent));
-  const connectedDevices = items.map(element => element.replaceAll('\n', '').replaceAll('\t', ''));
-  console.log('connectedDevices:', connectedDevices)
   await browser.close();
-  
-
-  // 브라우저 닫기
-
-  // DB 연결
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  const dbPath = resolve(__dirname, 'house.db');
-  // 데이터베이스 연결 및 초기화
-  async function initializeDatabase() {
-      const db = await open({
-      filename: dbPath,
-      driver: sqlite3.Database
-      });
-
-      await db.exec(`
-      CREATE TABLE IF NOT EXISTS devices (
-          device_name TEXT PRIMARY KEY NOT NULL, 
-          status INTEGER NOT NULL,
-          alert INTEGER NOT NULL DEFAULT 0,
-          updated_at TEXT NOT NULL
-      )
-      `);
-
-      return db;
-  }
-
-  async function createData(db, device_name, status, updated_at) {
-      await db.run(`INSERT INTO devices (device_name, status, updated_at) VALUES(?, ?, ?)`, device_name, status, updated_at);
-  }
-
-  async function updateDeviceStatus(db, device_name, status, updated_at) {
-    try {
-      const rows = await db.run(`UPDATE devices SET status = ?, alert = ?, updated_at = ? WHERE device_name = ?`, status, updated_at, device_name);
-      return rows;
-    } catch (error) {
-      console.error('Error fetching data from database:', error);
-      throw error;
+  const arrivedDevices = await db.getArrivingDevices(productNames)
+  for (const device of arrivedDevices) {
+    const isSisterHome = device.includes("누나")
+    const isFatherHome = device.includes("아빠")
+    if (isSisterHome) {
+      await alert("arrived", "누나")
     }
-  }
-
-  async function getAllData(db) { 
-    try {
-      const rows = await db.all(`SELECT device_name, status, updated_at FROM devices`);
-      return rows;
-    } catch (error) {
-      console.error('Error fetching data from database:', error);
-      throw error;
+    if (isFatherHome) {
+      await alert("arrived", "아빠")
     }
-  }
-
-  async function updateAlert(db, device_name, alert) {
-    try {
-      const rows = await db.run(`UPDATE devices SET alert = ? WHERE device_name = ?`, alert, device_name);
-      return rows;
-    } catch (error) {
-      console.error('Error fetching data from database:', error);
-      throw error;
-    }
-  }
-
-
-
-
-  const db = await initializeDatabase();
-  let db_data = await getAllData(db);
-
-  for (const element of connectedDevices) {
-    
   }
   
+  await db.upsertHomeDevices(productNames);
+  const leavingDevices = await db.getLeavingDevices(productNames)
+  for (const device of leavingDevices) {
+      const isSisterHome = device.includes("누나")
+      const isFatherHome = device.includes("아빠")
+      if (isSisterHome) {
+        await alert("arrived", "누나")
+      }
+      if (isFatherHome) {
+        await alert("arrived", "아빠")
+      }
+  }
+  await db.markDevicesAway(leavingDevices)
 
-
-
-  const alertURL = 'https://ntfy.sh/house';
-
-  // await axios.post(alertURL, data[0]);
-
-  await db.close();
+  const now = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD HH:mm:ss');
+  console.log("크롤링 완료:", now)
 })();
