@@ -97,3 +97,12 @@ export async function getArrivingDevices(deviceNames) {
   await db.close();
   return rows.map(r => r.device_name);
 }
+
+export async function selectAllDevices() {
+  const db = await initDB()
+  const rows = await db.all(
+    `SELECT device_name, is_home, updated_at FROM device_histories`
+  )
+  await db.close();
+  return rows
+}

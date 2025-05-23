@@ -37,7 +37,7 @@ dayjs.extend(timezone);
   const arrivedDevices = await db.getArrivingDevices(productNames)
   for (const device of arrivedDevices) {
     const isSisterHome = device.includes("누나")
-    const isFatherHome = device.includes("아빠")
+    const isFatherHome = device.includes("아빠") || (device.includes("LGwebOSTV") && !isSisterHome)
     if (isSisterHome) {
       await alert("arrived", "누나")
     }
@@ -62,4 +62,6 @@ dayjs.extend(timezone);
 
   const now = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD HH:mm:ss');
   console.log("크롤링 완료:", now)
+  const status = await db.selectAllDevices()
+  console.log(status)
 })();
