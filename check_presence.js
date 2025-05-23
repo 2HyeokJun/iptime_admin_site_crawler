@@ -6,9 +6,6 @@ export const checkPresence = async (productNames) => {
     for (const device of arrivedDevices) {
         const isSisterHome = device.includes("누나")
         const isFatherHome = device.includes("아빠")
-        console.log({
-            isSisterHome, isFatherHome
-        })
         if (isSisterHome) {
             await alert("arrived", "누나")
         }
