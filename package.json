@@ -1,24 +1,19 @@
 {
-  "name": "sap",
+  "name": "iptime_crawler",
   "version": "1.0.0",
-  "description": "",
-  "main": "transformer.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node --env-file=./.env ./crawling.js"
   },
   "author": "",
   "license": "ISC",
+  "description": "",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.12",
-    "dayjs": "^1.11.10",
-    "jstoxml": "^3.2.10",
-    "puppeteer": "^21.7.0",
-    "redaxios": "^0.5.1",
-    "request-promise": "^4.2.6",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7-rc.0",
-    "xml2js": "^0.6.2"
+    "puppeteer": "^23.6.0"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
 }
