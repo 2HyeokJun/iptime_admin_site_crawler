@@ -3,6 +3,10 @@ title: RepoConfig
 description: Configuration for Gemini Code Assist on a repository. All fields are optional and have default values.
 type: object
 properties:
+  language:
+    type: string
+    description: Choose a language that Gemini Code Assist Responses.
+    Default: Korean
   have_fun:
     type: boolean
     description: Enables fun features such as a poem in the initial pull request summary.
@@ -20,7 +24,9 @@ properties:
       disable:
         type: boolean
         description: Disables Gemini from acting on pull requests. 
-        language: ko-kr
+        language: ko
+        output_language: ko
+        locale: ko_KR
         Default: false.
       comment_severity_threshold:
         type: string
@@ -35,7 +41,9 @@ properties:
         type: integer
         format: int64
         description: The maximum number of review comments to consider. Use -1 for unlimited. 
-        language: ko-kr
+        language: ko
+        output_language: ko
+        locale: ko_KR
         Default: -1.
       pull_request_opened:
         type: object
@@ -48,13 +56,11 @@ properties:
           summary:
             type: boolean
             description: Posts a pull request summary on the pull request open. 
-            language: ko-kr
+            language: ko
+            output_language: ko
+            locale: ko_KR
             Default: true.
           code_review:
             type: boolean
             description: Posts a code review on pull request open. 
             Default: true.
-  language:
-    type: string
-    description: Choose a language that Gemini Code Assist Responses.
-    Default: Korean
