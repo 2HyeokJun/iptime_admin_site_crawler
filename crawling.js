@@ -1,14 +1,13 @@
 import puppeteer from 'puppeteer';
-import * as db from './db.js';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
-import { alert } from './alert.js'
+
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-(async () => {
+export const getPresenceDeviceLists = async () => {
   const browser = await puppeteer.launch({ headless: "new" });
   const page    = await browser.newPage();
 
@@ -34,32 +33,7 @@ dayjs.extend(timezone);
   );
 
   await browser.close();
-  const arrivedDevices = await db.getArrivingDevices(productNames)
-  for (const device of arrivedDevices) {
-    const isSisterHome = device.includes("누나")
-    const isFatherHome = device.includes("아빠")
-    if (isSisterHome) {
-      await alert("arrived", "누나")
-    }
-    if (isFatherHome) {
-      await alert("arrived", "아빠")
-    }
-  }
-  
-  await db.upsertHomeDevices(productNames);
-  const leavingDevices = await db.getLeavingDevices(productNames)
-  for (const device of leavingDevices) {
-      const isSisterHome = device.includes("누나")
-      const isFatherHome = device.includes("아빠")
-      if (isSisterHome) {
-        await alert("arrived", "누나")
-      }
-      if (isFatherHome) {
-        await alert("arrived", "아빠")
-      }
-  }
-  await db.markDevicesAway(leavingDevices)
-
   const now = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD HH:mm:ss');
-  console.log("크롤링 완료:", now)
-})();
+  console.log("크롤링 완료:", now);
+  return productNames
+}
