@@ -20,6 +20,7 @@ properties:
       disable:
         type: boolean
         description: Disables Gemini from acting on pull requests. 
+        language: ko-kr
         Default: false.
       comment_severity_threshold:
         type: string
@@ -34,6 +35,7 @@ properties:
         type: integer
         format: int64
         description: The maximum number of review comments to consider. Use -1 for unlimited. 
+        language: ko-kr
         Default: -1.
       pull_request_opened:
         type: object
@@ -46,6 +48,7 @@ properties:
           summary:
             type: boolean
             description: Posts a pull request summary on the pull request open. 
+            language: ko-kr
             Default: true.
           code_review:
             type: boolean
